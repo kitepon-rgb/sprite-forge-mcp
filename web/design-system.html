@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sprite-forge — design system</title><link rel="stylesheet" href="/style.css">
+<style>.ds{max-width:1100px;margin:0 auto;padding:24px}.ds h2{font-size:13px}.grid{display:grid;gap:16px}</style>
+</head><body>
+<div id="app"><div class="topbar"><span class="brand">sprite-forge <small>design system</small></span><span class="spacer"></span><span class="pill ok">GPU: RTX 5090 · 30.5/32.6GB</span></div>
+<nav class="stepper">
+  <div class="step is-done"><span class="n">1</span>素体生成</div><span class="rail"></span>
+  <div class="step is-current"><span class="n">2</span>キャラバイブル</div><span class="rail"></span>
+  <div class="step"><span class="n">3</span>キャラLoRA</div><span class="rail"></span>
+  <div class="step"><span class="n">4</span>活用/共有</div>
+  <span class="sep"></span>
+  <div class="step alt">編集/バリアント</div><div class="step alt">設定/LoRA</div>
+</nav>
+<main class="ds">
+  <div class="step-head"><h1>Design System</h1><p>新WebUIの配色・コンポーネント・導線の青写真</p></div>
+
+  <div class="section-title">Colors</div>
+  <div class="row" style="gap:8px">
+    <span class="pill" style="background:#13151a">bg</span><span class="pill" style="background:#1b1e25">surface</span>
+    <span class="pill" style="background:#262b34">panel</span><span class="pill" style="background:#4c8dff;color:#0a1020">accent</span>
+    <span class="pill" style="background:#3fb950;color:#06210c">ok</span><span class="pill" style="background:#f85149;color:#2a0a08">bad</span>
+    <span class="pill" style="background:#d9943a;color:#241405">warn</span>
+    <span class="pill" style="background:var(--checker);color:#111">checker(透過)</span>
+  </div>
+
+  <div class="section-title">Buttons</div>
+  <div class="row" style="gap:8px">
+    <button class="btn btn-primary">生成</button><button class="btn">標準</button>
+    <button class="btn btn-ghost">ghost</button><button class="btn btn-danger">採用(危険)</button>
+    <button class="btn btn-sm">small</button>
+    <button class="btn btn-primary"><span class="spin"></span>生成中</button>
+    <button class="btn" disabled>disabled</button>
+  </div>
+
+  <div class="section-title">AI プロンプト生成 (craft)</div>
+  <div class="craft">
+    <div class="craft-row">
+      <div class="field"><label>ラフ発想</label><input value="炎の魔法使いの女の子、ツインテール、強気"></div>
+      <button class="btn btn-primary">AIでプロンプト生成 (Opus)</button>
+    </div>
+    <div class="pill-note">claude -p / codex を cwd=プロジェクト で実行 → 下の編集可ボックスに流入</div>
+  </div>
+  <div class="field"><label>生成プロンプト（編集可）</label>
+    <textarea>1girl, solo, fire mage, long red twintails, confident smirk, fang, flame-patterned robe, ...</textarea></div>
+
+  <div class="section-title">Inputs</div>
+  <div class="panel"><div class="row">
+    <div class="field"><label>幅</label><input type="number" value="1024"></div>
+    <div class="field"><label>案数</label><input type="number" value="4"></div>
+    <div class="field"><label>LoRA</label><select><option>（画風LoRA既定）</option><option>char-firemage.safetensors</option></select></div>
+    <label class="toggle"><input type="checkbox" checked>画風LoRA</label>
+  </div>
+  <details class="disclosure"><summary>詳細（ControlNet 参照ポーズ）</summary>
+    <div class="row" style="margin-top:8px"><div class="field"><label>参照</label><input placeholder="hero"></div>
+    <div class="field"><label>強さ</label><input type="number" value="0.55"></div></div></details>
+  </div>
+
+  <div class="section-title">Candidate cards (sprite=「②へ」あり / variant=なし)</div>
+  <div class="gallery">
+    <div class="card"><div class="thumb checker"><img src="/api/image/sprite-85c6e2f5fbdc" alt="" onerror="this.style.opacity=.2"></div>
+      <div class="badges"><span class="badge pass ok">PASS</span><span class="badge ok">四隅透過</span></div>
+      <div class="card-actions"><button class="btn btn-sm">ピクセル化</button><button class="btn btn-sm">透過matte</button>
+        <button class="btn btn-sm btn-primary">② バイブルへ</button><button class="btn btn-sm">採用…</button></div></div>
+    <div class="card"><div class="thumb checker"><img src="/api/image/x" alt="" onerror="this.style.opacity=.2"></div>
+      <div class="badges"><span class="badge pass bad">FAIL</span><span class="badge bad">bboxズレ 3px</span></div>
+      <p class="reason">canvas mismatch</p>
+      <div class="card-actions"><button class="btn btn-sm">ピクセル化</button><button class="btn btn-sm">透過matte</button>
+        <button class="btn btn-sm">採用…</button></div></div>
+  </div>
+
+  <div class="section-title">Jobs dock (kind別・独立進捗)</div>
+  <div style="position:static;width:340px" id="dock-demo">
+    <div class="job-row"><div class="jr-head"><b>bible · firemage</b><span class="chip running">running</span><span class="x">×</span></div>
+      <div class="progress"><i style="width:60%"></i></div><div class="jr-line">パネル 14/23</div></div>
+    <div class="job-row"><div class="jr-head"><b>char-lora · firemage</b><span class="chip running">running</span><span class="x">×</span></div>
+      <div class="progress"><i style="width:38%"></i></div><div class="jr-line">step 570/1500 (38%)</div></div>
+    <div class="job-row"><div class="jr-head"><b>style-lora</b><span class="chip done">done</span><span class="x">×</span></div>
+      <div class="jr-line">→ 配置完了: sprite-style-v2.safetensors</div></div>
+  </div>
+
+  <div class="section-title">Empty / Banner</div>
+  <div class="banner">前提: ② を先に完了してください<span class="spacer"></span><button class="btn btn-sm">② へ</button></div>
+  <div class="empty-state"><div class="big">✦</div>プロンプトを書いて素体を生成しましょう</div>
+</main></div>
+</body></html>

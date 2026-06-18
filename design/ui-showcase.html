@@ -1,0 +1,301 @@
+<!-- @dsCard group="sprite-forge UI" -->
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sprite-forge — design system</title><style>/* ============================================================================
+   sprite-forge — design system (vanilla CSS, no build). Class names are the
+   blueprint shared with the claude.ai/design component library.
+   Order: (a) tokens  (b) base  (c) layout  (d) components  (e) screens  (f) responsive
+   ============================================================================ */
+
+/* (a) TOKENS ---------------------------------------------------------------- */
+:root{
+  --bg:#13151a; --surface:#1b1e25; --surface-2:#22262f; --panel:#262b34;
+  --line:#343a45; --line-2:#434a57; --ink:#e9ecf2; --ink-mut:#9aa3b2; --ink-dim:#6b7280;
+  --accent:#4c8dff; --accent-2:#6aa3ff; --accent-ink:#0a1020;
+  --ok:#3fb950; --bad:#f85149; --warn:#d9943a;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+  --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+  --fz-xs:11px; --fz-sm:12px; --fz-md:14px; --fz-lg:16px; --fz-h2:19px; --fz-h1:24px;
+  --font:-apple-system,BlinkMacSystemFont,system-ui,"Hiragino Kaku Gothic ProN",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow:0 4px 16px rgba(0,0,0,.35); --shadow-lg:0 12px 40px rgba(0,0,0,.5);
+  --checker:repeating-conic-gradient(#9a9a9a 0 25%,#cfcfcf 0 50%) 0/22px 22px;
+  --topbar-h:56px;
+}
+
+/* (b) BASE ------------------------------------------------------------------ */
+*{box-sizing:border-box}
+[hidden]{display:none!important}            /* must beat any display rule */
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:var(--fz-md)/1.55 var(--font);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+a{color:var(--accent-2);text-decoration:none}
+a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:var(--r-pill)}
+::selection{background:rgba(76,141,255,.35)}
+
+/* (c) LAYOUT (shell grid) --------------------------------------------------- */
+#app{display:grid;grid-template-rows:var(--topbar-h) auto 1fr;min-height:100vh}
+.topbar{display:flex;align-items:center;gap:var(--sp-4);height:var(--topbar-h);
+  padding:0 var(--sp-5);background:var(--surface);border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:20}
+.topbar .brand{font-weight:700;letter-spacing:.3px;font-size:var(--fz-lg)}
+.topbar .brand small{color:var(--ink-mut);font-weight:400;font-size:var(--fz-xs);margin-left:6px}
+.topbar .spacer{flex:1}
+
+.stepper{display:flex;gap:var(--sp-2);align-items:center;padding:var(--sp-3) var(--sp-5);
+  background:var(--surface-2);border-bottom:1px solid var(--line);overflow-x:auto}
+.stepper .step{display:flex;align-items:center;gap:var(--sp-2);padding:8px 14px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-mut);cursor:pointer;
+  white-space:nowrap;font-size:var(--fz-sm);transition:.15s}
+.stepper .step:hover{border-color:var(--line-2);color:var(--ink)}
+.stepper .step .n{display:grid;place-items:center;width:20px;height:20px;border-radius:var(--r-pill);
+  background:var(--surface-2);color:var(--ink-mut);font-size:var(--fz-xs);font-weight:700}
+.stepper .step.is-current{border-color:var(--accent);color:var(--ink);background:rgba(76,141,255,.12)}
+.stepper .step.is-current .n{background:var(--accent);color:var(--accent-ink)}
+.stepper .step.is-done .n{background:var(--ok);color:#06210c}
+.stepper .rail{flex:0 0 18px;height:1px;background:var(--line-2)}
+.stepper .sep{flex:1;min-width:8px}
+.stepper .step.alt{background:transparent;border-style:dashed}
+
+#stage{padding:var(--sp-6) var(--sp-5);max-width:1320px;width:100%;margin:0 auto}
+.step-head{margin-bottom:var(--sp-5)}
+.step-head h1{font-size:var(--fz-h1)}
+.step-head p{color:var(--ink-mut);margin-top:var(--sp-1)}
+.layout-2{display:grid;grid-template-columns:380px 1fr;gap:var(--sp-5);align-items:start}
+
+/* (d) COMPONENTS ------------------------------------------------------------ */
+/* buttons */
+.btn{cursor:pointer;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink);
+  border-radius:var(--r-sm);padding:9px 16px;font:600 var(--fz-md) var(--font);transition:.15s;
+  display:inline-flex;align-items:center;gap:8px;line-height:1}
+.btn:hover{border-color:var(--accent);background:var(--surface)}
+.btn:disabled{opacity:.45;cursor:default;border-color:var(--line)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.btn-ghost{background:transparent;border-color:var(--line)}
+.btn-danger{background:transparent;border-color:#7a2b2b;color:#ff8a82}
+.btn-danger:hover{background:rgba(248,81,73,.12);border-color:var(--bad)}
+.btn-sm{padding:6px 10px;font-size:var(--fz-sm)}
+.btn .spin{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* fields */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-5)}
+.section-title{font-size:var(--fz-sm);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mut);
+  border-left:3px solid var(--accent);padding-left:8px;margin:var(--sp-5) 0 var(--sp-3)}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:var(--sp-3)}
+.field>label,.field-label{font-size:var(--fz-sm);color:var(--ink-mut)}
+.field .hint{font-size:var(--fz-xs);color:var(--ink-dim)}
+.row{display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:flex-end}
+.row .field{flex:1;margin-bottom:0}
+input,textarea,select{background:var(--surface);border:1px solid var(--line-2);color:var(--ink);
+  border-radius:var(--r-sm);padding:9px 11px;font:var(--fz-md) var(--font);width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(76,141,255,.18)}
+input[type=number]{width:100%}
+input[type=checkbox]{width:auto;accent-color:var(--accent)}
+textarea{resize:vertical;min-height:76px;line-height:1.5}
+.inline{display:flex;align-items:center;gap:8px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:var(--fz-sm);color:var(--ink-mut);cursor:pointer}
+.disclosure>summary{cursor:pointer;color:var(--ink-mut);font-size:var(--fz-sm);padding:6px 0;list-style:none}
+.disclosure>summary::-webkit-details-marker{display:none}
+.disclosure>summary::before{content:"▸ ";color:var(--accent)}
+.disclosure[open]>summary::before{content:"▾ "}
+
+/* prompt-craft panel */
+.craft{background:linear-gradient(180deg,rgba(76,141,255,.10),transparent);
+  border:1px solid var(--line-2);border-radius:var(--r-md);padding:var(--sp-3);margin-bottom:var(--sp-4)}
+.craft .craft-row{display:flex;gap:var(--sp-2);align-items:flex-end}
+.craft .craft-row .field{flex:1;margin:0}
+.craft .pill-note{font-size:var(--fz-xs);color:var(--ink-dim);margin-top:6px}
+
+/* pills / badges */
+.pill{font-size:var(--fz-xs);color:var(--ink-mut);border:1px solid var(--line);border-radius:var(--r-pill);
+  padding:4px 11px;white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:#2c5a36} .pill.err{color:var(--bad);border-color:#7a2b2b}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.badge{padding:2px 8px;border-radius:var(--r-pill);border:1px solid var(--line);color:var(--ink-mut);font-size:var(--fz-xs)}
+.badge.ok{color:var(--ok);border-color:#2c5a36} .badge.bad{color:var(--bad);border-color:#7a2b2b}
+.badge.pass{font-weight:700}
+
+/* gallery + cards */
+.gallery-toolbar{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3);color:var(--ink-mut);font-size:var(--fz-sm)}
+.gallery-toolbar .spacer{flex:1}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--sp-4);align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:10px;
+  box-shadow:var(--shadow);transition:.15s}
+.card:hover{border-color:var(--line-2)}
+.card .thumb{border-radius:var(--r-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;
+  min-height:220px;max-height:380px}
+.card .thumb img{max-width:100%;max-height:380px;display:block}
+.checker{background:var(--checker)}
+.card .reason{color:var(--bad);font-size:var(--fz-xs);margin:4px 0}
+.card-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.card-actions .btn{flex:0 0 auto}
+.card .adopt-result{font-size:var(--fz-xs);flex-basis:100%;margin-top:4px}
+.card .adopt-result.ok{color:var(--ok)} .card .adopt-result.bad{color:var(--bad)}
+
+/* bible sheet viewer */
+.sheet-viewer{display:flex;flex-direction:column;gap:var(--sp-3)}
+.sheet-viewer img{max-width:100%;border:1px solid var(--line);border-radius:var(--r-md);background:#fff}
+.sheet-viewer .share{display:flex;gap:var(--sp-3);align-items:center}
+
+/* jobs dock */
+#jobs-dock{position:fixed;right:var(--sp-4);bottom:var(--sp-4);width:340px;max-width:92vw;
+  display:flex;flex-direction:column;gap:var(--sp-2);z-index:30}
+.job-row{background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:10px 12px;box-shadow:var(--shadow);font-size:var(--fz-sm)}
+.job-row .jr-head{display:flex;align-items:center;gap:8px}
+.job-row .jr-head .x{margin-left:auto;cursor:pointer;color:var(--ink-dim)}
+.job-row .chip{font-size:var(--fz-xs);padding:1px 8px;border-radius:var(--r-pill);border:1px solid var(--line)}
+.job-row .chip.running{color:var(--accent-2);border-color:#2b4a7a}
+.job-row .chip.done{color:var(--ok);border-color:#2c5a36}
+.job-row .chip.error{color:var(--bad);border-color:#7a2b2b}
+.job-row .jr-line{color:var(--ink-mut);margin-top:5px;font-size:var(--fz-xs)}
+.progress{height:6px;border-radius:var(--r-pill);background:var(--surface);overflow:hidden;margin-top:7px}
+.progress>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.progress.indet>i{width:35%;animation:indet 1.1s ease-in-out infinite}
+@keyframes indet{0%{margin-left:-35%}100%{margin-left:100%}}
+.job-row pre{margin:7px 0 0;max-height:130px;overflow:auto;background:#0e1014;border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:7px;font:var(--fz-xs)/1.4 var(--mono);color:var(--ink-mut);white-space:pre-wrap}
+
+/* toasts */
+#toasts{position:fixed;left:50%;bottom:var(--sp-5);transform:translateX(-50%);display:flex;
+  flex-direction:column;gap:var(--sp-2);z-index:40;align-items:center}
+.toast{background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:10px 16px;box-shadow:var(--shadow-lg);font-size:var(--fz-sm);animation:rise .2s ease}
+.toast.ok{border-color:#2c5a36} .toast.error{border-color:#7a2b2b}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+
+/* states */
+.empty-state{text-align:center;color:var(--ink-mut);padding:var(--sp-8) var(--sp-4);
+  border:1px dashed var(--line-2);border-radius:var(--r-lg)}
+.empty-state .big{font-size:30px;margin-bottom:var(--sp-2)}
+.banner{background:rgba(217,148,58,.12);border:1px solid #6b5326;color:#e9c98a;
+  border-radius:var(--r-md);padding:10px 14px;margin-bottom:var(--sp-4);font-size:var(--fz-sm);
+  display:flex;align-items:center;gap:var(--sp-3)}
+.banner .spacer{flex:1}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.66);display:flex;align-items:center;
+  justify-content:center;z-index:50;padding:var(--sp-4)}
+.modal-box{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-lg);
+  padding:var(--sp-4);max-width:94vw;max-height:94vh;overflow:auto;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3);flex-wrap:wrap}
+.modal-head strong{font-size:var(--fz-lg)} .modal-head .spacer{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r-sm);overflow:hidden}
+.seg label{padding:6px 12px;font-size:var(--fz-sm);color:var(--ink-mut);cursor:pointer}
+.seg label:has(input:checked){background:var(--accent);color:var(--accent-ink)}
+.seg input{display:none}
+
+/* mask painter (load-bearing geometry — keep) */
+.mask-stage{position:relative;line-height:0;display:inline-block;background:var(--checker)}
+.mask-stage img{display:block;max-width:74vh;max-height:74vh}
+.mask-stage canvas{position:absolute;left:0;top:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
+
+/* train image-select grid */
+.train-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;
+  max-width:86vw;max-height:64vh;overflow:auto}
+.train-grid .tc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:6px}
+.train-grid .tc img{width:100%;height:118px;object-fit:contain;border-radius:4px;background:var(--checker)}
+.train-grid .tc .trow{display:flex;align-items:center;gap:6px;font-size:var(--fz-xs);color:var(--ink);margin-top:4px}
+.train-grid .tc .tcap{margin-top:4px;font-size:var(--fz-xs)}
+
+/* (e) SCREENS --------------------------------------------------------------- */
+.busy{display:inline-flex;align-items:center;gap:8px;color:var(--ink-mut);font-size:var(--fz-sm)}
+.cta-bar{display:flex;justify-content:flex-end;gap:var(--sp-3);margin-top:var(--sp-5)}
+.err-text{color:var(--bad);white-space:pre-wrap;font-size:var(--fz-sm);margin-top:var(--sp-2)}
+
+/* (f) RESPONSIVE ------------------------------------------------------------ */
+@media (max-width:880px){
+  .layout-2{grid-template-columns:1fr}
+  #jobs-dock{left:var(--sp-3);right:var(--sp-3);width:auto}
+}
+</style>
+<style>.ds{max-width:1100px;margin:0 auto;padding:24px}.ds h2{font-size:13px}.grid{display:grid;gap:16px}</style>
+</head><body>
+<div id="app"><div class="topbar"><span class="brand">sprite-forge <small>design system</small></span><span class="spacer"></span><span class="pill ok">GPU: RTX 5090 · 30.5/32.6GB</span></div>
+<nav class="stepper">
+  <div class="step is-done"><span class="n">1</span>素体生成</div><span class="rail"></span>
+  <div class="step is-current"><span class="n">2</span>キャラバイブル</div><span class="rail"></span>
+  <div class="step"><span class="n">3</span>キャラLoRA</div><span class="rail"></span>
+  <div class="step"><span class="n">4</span>活用/共有</div>
+  <span class="sep"></span>
+  <div class="step alt">編集/バリアント</div><div class="step alt">設定/LoRA</div>
+</nav>
+<main class="ds">
+  <div class="step-head"><h1>Design System</h1><p>新WebUIの配色・コンポーネント・導線の青写真</p></div>
+
+  <div class="section-title">Colors</div>
+  <div class="row" style="gap:8px">
+    <span class="pill" style="background:#13151a">bg</span><span class="pill" style="background:#1b1e25">surface</span>
+    <span class="pill" style="background:#262b34">panel</span><span class="pill" style="background:#4c8dff;color:#0a1020">accent</span>
+    <span class="pill" style="background:#3fb950;color:#06210c">ok</span><span class="pill" style="background:#f85149;color:#2a0a08">bad</span>
+    <span class="pill" style="background:#d9943a;color:#241405">warn</span>
+    <span class="pill" style="background:var(--checker);color:#111">checker(透過)</span>
+  </div>
+
+  <div class="section-title">Buttons</div>
+  <div class="row" style="gap:8px">
+    <button class="btn btn-primary">生成</button><button class="btn">標準</button>
+    <button class="btn btn-ghost">ghost</button><button class="btn btn-danger">採用(危険)</button>
+    <button class="btn btn-sm">small</button>
+    <button class="btn btn-primary"><span class="spin"></span>生成中</button>
+    <button class="btn" disabled>disabled</button>
+  </div>
+
+  <div class="section-title">AI プロンプト生成 (craft)</div>
+  <div class="craft">
+    <div class="craft-row">
+      <div class="field"><label>ラフ発想</label><input value="炎の魔法使いの女の子、ツインテール、強気"></div>
+      <button class="btn btn-primary">AIでプロンプト生成 (Opus)</button>
+    </div>
+    <div class="pill-note">claude -p / codex を cwd=プロジェクト で実行 → 下の編集可ボックスに流入</div>
+  </div>
+  <div class="field"><label>生成プロンプト（編集可）</label>
+    <textarea>1girl, solo, fire mage, long red twintails, confident smirk, fang, flame-patterned robe, ...</textarea></div>
+
+  <div class="section-title">Inputs</div>
+  <div class="panel"><div class="row">
+    <div class="field"><label>幅</label><input type="number" value="1024"></div>
+    <div class="field"><label>案数</label><input type="number" value="4"></div>
+    <div class="field"><label>LoRA</label><select><option>（画風LoRA既定）</option><option>char-firemage.safetensors</option></select></div>
+    <label class="toggle"><input type="checkbox" checked>画風LoRA</label>
+  </div>
+  <details class="disclosure"><summary>詳細（ControlNet 参照ポーズ）</summary>
+    <div class="row" style="margin-top:8px"><div class="field"><label>参照</label><input placeholder="hero"></div>
+    <div class="field"><label>強さ</label><input type="number" value="0.55"></div></div></details>
+  </div>
+
+  <div class="section-title">Candidate cards (sprite=「②へ」あり / variant=なし)</div>
+  <div class="gallery">
+    <div class="card"><div class="thumb checker"><img src="" alt="" onerror="this.style.opacity=.2"></div>
+      <div class="badges"><span class="badge pass ok">PASS</span><span class="badge ok">四隅透過</span></div>
+      <div class="card-actions"><button class="btn btn-sm">ピクセル化</button><button class="btn btn-sm">透過matte</button>
+        <button class="btn btn-sm btn-primary">② バイブルへ</button><button class="btn btn-sm">採用…</button></div></div>
+    <div class="card"><div class="thumb checker"><img src="" alt="" onerror="this.style.opacity=.2"></div>
+      <div class="badges"><span class="badge pass bad">FAIL</span><span class="badge bad">bboxズレ 3px</span></div>
+      <p class="reason">canvas mismatch</p>
+      <div class="card-actions"><button class="btn btn-sm">ピクセル化</button><button class="btn btn-sm">透過matte</button>
+        <button class="btn btn-sm">採用…</button></div></div>
+  </div>
+
+  <div class="section-title">Jobs dock (kind別・独立進捗)</div>
+  <div style="position:static;width:340px" id="dock-demo">
+    <div class="job-row"><div class="jr-head"><b>bible · firemage</b><span class="chip running">running</span><span class="x">×</span></div>
+      <div class="progress"><i style="width:60%"></i></div><div class="jr-line">パネル 14/23</div></div>
+    <div class="job-row"><div class="jr-head"><b>char-lora · firemage</b><span class="chip running">running</span><span class="x">×</span></div>
+      <div class="progress"><i style="width:38%"></i></div><div class="jr-line">step 570/1500 (38%)</div></div>
+    <div class="job-row"><div class="jr-head"><b>style-lora</b><span class="chip done">done</span><span class="x">×</span></div>
+      <div class="jr-line">→ 配置完了: sprite-style-v2.safetensors</div></div>
+  </div>
+
+  <div class="section-title">Empty / Banner</div>
+  <div class="banner">前提: ② を先に完了してください<span class="spacer"></span><button class="btn btn-sm">② へ</button></div>
+  <div class="empty-state"><div class="big">✦</div>プロンプトを書いて素体を生成しましょう</div>
+</main></div>
+</body></html>

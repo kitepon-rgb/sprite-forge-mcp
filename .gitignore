@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Node (web is vanilla ESM / no build, but ignore just in case)
+node_modules/
+
+# Models & weights (large; never commit)
+models/**/*.safetensors
+models/**/*.ckpt
+models/**/*.gguf
+models/**/*.pt
+models/**/*.pth
+
+# Runtime cache / generated candidates / logs
+.cache/
+generated/
+*.log
+errors.ndjson
+
+# OS
+.DS_Store
+.venv-sam2/
+sam2_t.pt
+*.pt
+
+# Claude Code local (personal machine/box permissions; not team-wide)
+.claude/settings.local.json
+
+# Local config: your real box/host/account values (see .env.example). NEVER publish.
+.env
+
+# Internal handoff notes (machine/box admin detail) — kept local, not for the public repo.
+HANDOFF.md
+
+# Editor / agent test-run artifacts (personal toolchain; not part of the project)
+.vscode/
+.playwright-mcp/
+.claude/

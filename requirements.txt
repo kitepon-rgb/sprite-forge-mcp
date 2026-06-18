@@ -1,0 +1,13 @@
+# sprite-forge backend (runs on the Mac; drives ComfyUI on the GPU box over LAN). Python 3.11+.
+# Heavy ML (torch/cu130, ComfyUI) lives in the ComfyUI env on the GPU box, NOT here.
+# This backend orchestrates ComfyUI over HTTP/WS and does deterministic Pillow work.
+
+fastapi
+uvicorn[standard]
+fastmcp>=3,<4      # FastMCP (MCP Python SDK) — agent face mounted at /mcp (3.x http_app API)
+httpx              # ComfyUI REST calls
+websockets         # ComfyUI /ws progress subscription
+pillow             # deterministic post-processing (alpha audit, bbox/height fit, posterize)
+numpy              # pixel-level audit / quantization math
+rembg              # anime-tuned matting (isnet-anime) for edit-output -> RGBA
+onnxruntime        # rembg backend (CPU on the Mac; matting is occasional)
