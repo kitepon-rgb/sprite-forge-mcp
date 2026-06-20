@@ -1,6 +1,6 @@
 # 03 — Models and Runtime（実機事実・VRAM・ランタイム判定）
 
-> **状態（2026-06-18）**: 実機確定。素体＝Illustrious-XL-v2.0 txt2img＋**BiRefNet** matte、編集/バイブル＝Qwen-Image-Edit-2511 fp8mixed（~32GB常駐）、構造誘導＝ControlNet-Union-SDXL(promax)、LoRA＝Lightning(4steps)/画風`sprite-style-v2`/キャラLoRA群。torch2.12+cu130 / RTX5090 sm_120。最新は `CLAUDE.md`。
+> **状態（2026-06-18）**: 実機確定。素体＝Illustrious-XL-v2.0 txt2img＋**BiRefNet** matte、編集/バイブル＝Qwen-Image-Edit-2511 fp8mixed（~32GB常駐）、構造誘導＝ControlNet-Union-SDXL(promax)、LoRA＝Lightning(4steps)/画風`sprite-style-v2`/キャラLoRA群。torch2.12+cu130 / RTX5090 sm_120。最新は `CLAUDE.md`。モデルの入手先・配置は `models.md`。
 
 ## 実機（点検済み 2026-06-17）
 

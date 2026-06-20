@@ -1,6 +1,6 @@
 # CLAUDE.md — sprite-forge-mcp
 
-rpgdev 専用のローカルGPU画像生成スタジオ。**1つの Python バックエンド＝2つの顔**（人間 WebUI [FastAPI] ＋ エージェント MCP [FastMCP]）。生成計算は別マシンの ComfyUI。詳細設計は `docs/00`〜`07`。
+rpgdev 専用のローカルGPU画像生成スタジオ。**1つの Python バックエンド＝2つの顔**（人間 WebUI [FastAPI] ＋ エージェント MCP [FastMCP]）。生成計算は別マシンの ComfyUI。詳細設計は `docs/00`〜`07`。**導入（他人向け）は `INSTALL.md`＋`docs/models.md`**。
 
 ## アーキテクチャ（実装の現実）
 - **バックエンドは Mac で動かす**（rpgdev も Claude/Codex も Mac。採用＝rpgdev へ書き出しがローカル完結）。`docs/02` の図は box と書くが実装は Mac。
@@ -32,14 +32,14 @@ uvicorn backend.app:app --host 127.0.0.1 --port 8765
 - `backend/comfy_client.py` 非同期 ComfyUI クライアント（WS進捗・submit/wait/run/upload/get_image）。完了判定は `execution_success` ＋ `executing node==null`、history は outputs が出るまでポーリング（取得レース対策）。
 - `backend/workflows.py` `qwen_edit_variant`（実証済み）/ `sdxl_generate`（素SDXL txt2img＝Sprite経路で使用）/ `sdxl_layerdiffuse_generate`（廃止・Illustrious非互換、参考保持）。
 - `backend/audit.py` 色自動選択/色抜き/マスク合成/監査ゲート/checker。決定的処理のみ。
-- `backend/services.py` gpu_status / generate_variant / generate_sprite / make_transparent / pixelize / fit_to_base / adopt。瘢痕ゲート内蔵。
+- `backend/services.py` gpu_status / generate_variant / generate_sprite / make_transparent / pixelize / fit_to_base / adopt。瘢痕ゲート内蔵。`generate_sprite(bg=auto)`＝淡色プロンプト検知→緑背景でmatte（白/水キャラの透過削れ対策）。
 - `backend/training.py` **LoRA学習オーケストレータ**：`train_style_lora`（画風）＋`start_character`/`train_character_lora`（**バイブルのパネル→キャラLoRA**、ComfyUI停止でクリーンGPU→学習→再開→配置）。データセット構築→box scp→ssh で sd-scripts 学習→ComfyUI配置→実行時アクティブ化。WebUIボタン/MCP/`/api/train_lora`・`/api/train_character`。**手作業box操作ゼロ**（バックエンドが ssh。エージェントだけがサンドボックス）。
 - `backend/bible.py` **キャラバイブル生成**（`generate_character_bible`、**マスターシート参照方式**）：①Qwen一発で“詰め込みマスターシート”を生成（全ビュー一括描画＝一貫性アンカー・後ろ姿も正しく向く）→②**それを参照に**23パネル（ターンアラウンド/体型ref/表情/アクション/別衣装/ちび/装備）を**個別高解像でon-model生成**→③Pillowで整列レイアウト合成（先頭にマスター）＋個別パネル保存(=キャラLoRA教材)。WebUIボタン/MCP/`/api/bible`。「N回独立編集より1回協調生成」の方が一貫＝この設計の核。完了時に**自己完結HTMLバイブル**（base64・`/api/bible_html/<name>`・WebUIにリンク）も自動生成。**claude.ai/design 共有**＝DesignSync(`/design-sync`)でHTMLを `@dsCard` 付きでpush（agentのclaude.aiログイン要・backend機能ではない。projectId は design 上）。**入力は rpgdev スプライト名 OR 生成候補ID**（`bible._job` が `services.load_candidate` で解決）＝**「Sprite新規生成で素体を複数作る→ギャラリーで選ぶ→カードの『この素体でバイブル』」**で完全新規キャラもWebで設定資料化（D完了）。
 - `backend/app.py` FastAPI REST ＋ FastMCP(/mcp、lifespanネスト) ＋ 静的 `web/` 配信（"/" は最後にマウントし /mcp を覆わない）。**MCPは外部AI向けに自己文書化**：`FastMCP(instructions=MCP_INSTRUCTIONS)` で初期化時に全体マニュアル（推奨パイプライン craft→generate→bible→train→adopt・用語・瘢痕ルール）を返す。全15ツール（discovery `list_sprites`/`list_loras` 含む＝外部AIが有効なbase名/LoRA名を取得可能）。
 - `web/` vanilla ESM の**ステップ導線WebUI**（ビルド工程なし）：`index.html`(shell：topbar/stepper/#stage/#jobs-dock)＋`main.js`(hash router＋GPU/SSE/lists)＋`api.js`/`state.js`(observable store)/`ui.js`(card/badge/modal/toast)/`jobs.js`(統一ジョブドック＋SSE)＋features `gen.js`(①素体生成/④活用＋**AIプロンプト生成パネル**)/`bible.js`(②)/`lora.js`(③＋設定/LoRA)/`variant.js`(編集/バリアント＋マスク)。`style.css` はデザインシステム(トークン＋component class)。`design/` は claude.ai/design 用ショーケース。導線＝①素体→②バイブル→③キャラLoRA→④活用/共有。
 - `backend/promptcraft.py` **AIプロンプト生成**：ユーザー自身の `claude -p`(or `codex`)を **cwd=プロジェクト**でサブプロセス実行→ラフ発想を英語タグ詳細プロンプトに展開（Anthropic API不使用＝追加課金なし・プロジェクトCLAUDE.md文脈付き）。`/api/craft_prompt`＋MCP `craft_prompt`。`config.PROMPT_CLI/MODEL/PROJECT_DIR`。
 
-## 現状（2026-06-18 セッション後）
+## 現状（2026-06-20 セッション後）
 **キャラ制作パイプラインが一周完成**：テキスト → ①素体生成 → ②キャラバイブル → ③キャラLoRA → ④任意ポーズ量産 / 採用 / 共有。人間＝WebUI、AI＝MCP の二つの顔が同一バックエンドで稼働。
 - ✅ **基盤**: E2E（Mac→GPU→生成→透過→監査）/ 透過の識別色方式 / ダメージ版 pose-lock（denoise0.7+マスク保証）/ SSE進捗 / SAM2マスク（隔離`.venv-sam2`）。
 - ✅ **Sprite新規生成（素体）**: 素SDXL(Illustrious)+matte。matteは **BiRefNet**（`config.MATTE_MODEL`＝淡色キャラの手/毛先の削れ対策）。クリーン背景強制で透過安定。LayerDiffuse廃止。
