@@ -1,62 +1,135 @@
+<p align="center">
+  <img src=".github/og.svg" alt="sprite-forge-mcp — local-GPU sprite studio for games, driven from a human WebUI or an AI agent over MCP" width="100%">
+</p>
+
 # sprite-forge-mcp
 
-rpgdev 専用のローカル GPU 画像生成スタジオ。RTX 5090 + ComfyUI を土台に、**1つの Python バックエンドが2つの顔**を持つ：
+[![license: MIT](https://img.shields.io/github/license/kitepon-rgb/sprite-forge-mcp?color=blue)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.11%2B-3776ab?logo=python&logoColor=white)](requirements.txt)
+[![MCP](https://img.shields.io/badge/MCP-FastMCP-4c8dff?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
+[![backend: ComfyUI](https://img.shields.io/badge/backend-ComfyUI-7ee08a)](https://github.com/comfyanonymous/ComfyUI)
 
-- **人間向け WebUI**（FastAPI/SSE）：ステップ導線で ①素体生成 → ②キャラバイブル → ③キャラLoRA → ④活用/共有 を迷わず辿れる。
-- **エージェント向け MCP**（FastMCP）：Claude/Codex が同一パイプラインを LAN 越しに駆動。初期化時に全体マニュアルを返す自己文書化済み。
+**English** · [日本語](README.ja.md)
 
-両者は**同じ `backend/services.py`** を呼ぶ（ロジック二重化なし・瘢痕ゲート回避不可）。rpgdev のアセット制作で繰り返した失敗（クロマキー黒漏れ・ダメージ版の pose/canvas ズレ・画風ドリフト・手作業加工・主観の版爆発）を、**ツールに焼いた瘢痕ルール**で構造的に殺すのが目的。
+> **Type an idea → get a transparent, game-ready character sprite. Same engine, drivable by you (WebUI) or your AI agent (MCP).**
 
-## 状態（2026-06-20）
-**キャラ制作パイプラインが一周完成・実機検証済み。** テキスト → 素体 → 設定資料（バイブル）→ キャラLoRA → 任意ポーズ量産 → rpgdev へ採用。
-- ✅ 素体生成（SDXL/Illustrious + BiRefNet matte）、ダメージ版編集（Qwen-Image-Edit・pose-lock）、画風LoRA v2、ControlNet 参照ポーズ。淡色(水)キャラは bg=auto で緑背景matte。
-- ✅ キャラバイブル（マスターシート参照方式・自己完結HTML・claude.ai/design 共有）。
-- ✅ キャラLoRA（バイブルのパネルで1クリック学習 → 任意ポーズ量産）。
-- ✅ AIプロンプト生成（`claude -p`/`codex` を cwd=プロジェクトで実行・追加課金なし）。
-- ✅ WebUI 全面刷新（ステップ導線・vanilla ESM・デザインシステム）／ MCP 自己文書化（全15ツール）。
+<p align="center">
+  <img src=".github/example-output.png" alt="Example RGBA sprite output with transparent corners and a clean matte" width="100%">
+</p>
 
-導入は **[INSTALL.md](INSTALL.md)**、詳細な実装現状・設計判断は **[CLAUDE.md](CLAUDE.md)**（実装の正典）を参照。
+`sprite-forge` is a local [ComfyUI](https://github.com/comfyanonymous/ComfyUI) studio that turns a text idea into a transparent **RGBA sprite**, a full **character bible**, a **character LoRA**, and then that character **in any pose** — with hard-won production rules baked into quality gates, so broken assets get caught before they reach your game.
 
-## アーキテクチャ
-- **バックエンドは Mac で動かす**（rpgdev も Claude/Codex も Mac＝「採用＝rpgdev へ書き出し」がローカル完結）。
-- **ComfyUI は GPU機 `<GPU_HOST>`** で headless 稼働（NSSMサービス `ComfyUI`・RTX5090・torch2.12+cu130）。Mac のバックエンドが LAN 越しに HTTP+WS で駆動。
-- 1 uvicorn プロセスに FastAPI（`/api/*`）と FastMCP（`/mcp`）を同居。
+One Python backend, **two faces**: a step-flow **WebUI** for humans and a **FastMCP server** for agents (Claude / Codex / any MCP client) — both calling the *same* `backend/services.py`, so the gates can't be bypassed from either side. Heavy generation runs on a remote ComfyUI GPU box; the backend is a thin orchestrator that does the deterministic, gate-keeping work.
 
-## 起動
-> **初めて導入する人（と そのAI）は [INSTALL.md](INSTALL.md) を読む** — 前提（CUDA GPU で動く ComfyUI）・モデル配置（[docs/models.md](docs/models.md)）・任意機能・制約まで一通り。
+> *MCP = [Model Context Protocol](https://modelcontextprotocol.io) — the open standard that lets agents like Claude Code plug capabilities into an AI.*
+
+**Status:** runs end-to-end on a real RTX 5090 + Mac setup — the matte, character-bible, and character-LoRA pipelines are all working. MIT. Needs a CUDA GPU running ComfyUI (see [Requirements](#requirements)).
+
+## Why
+
+Making character sprites for a small game with image models is a special kind of pain, and I hit all of it shipping assets for my own RPG:
+
+- **Chroma-key black leaks** — the "closed black" trapped between an arm and a ribbon survives a naive flood-fill; one accepted sprite had **200k+ leaked pixels**.
+- **Damage-version drift** — the `-damaged` version comes back re-posed and a few pixels off, so it no longer lines up with the base in-game and the CSS layout breaks. *"Don't move the original by a single dot."*
+- **Style drift** — drop the retro-pixel phrase and the model slides into glossy anime.
+- **Manual touch-ups never work** — repainting cloth/skin/outline by hand had a success rate of zero.
+- **The version explosion** — "which one looks right" is subjective, so one sprite ground out to **v39**.
+
+So sprite-forge doesn't just call a model — it **turns each of those scars into a gate**. Outputs are forced to RGBA with transparent corners; damaged variants are machine-checked to match the base bbox within **≤1 px**; the mandatory style phrase is auto-injected; there is **no hand-paint tool** (you point with masks/dots, the model regenerates); and nothing reaches your game folder without passing the adopt gate. A broken asset can't silently reach your game — it fails a gate instead.
+
+## Why not just use ComfyUI directly?
+
+You already have ComfyUI — that's the engine here. sprite-forge adds the parts ComfyUI doesn't:
+
+- **Two faces, one logic** — a guided WebUI *and* an MCP server for agents, sharing one gated backend. Your AI agent can run the whole pipeline end to end; you don't hand-wire node graphs.
+- **A character pipeline, not one-off images** — idea → sprite → a *consistent* bible → LoRA → that character in any pose, as a single flow.
+- **Production gates** — transparent-corner RGBA, ≤1 px damage-version alignment, mandatory style, audited adopt. Raw ComfyUI will happily hand you a broken sprite; this won't.
+- **Reproducible, no hand-paint** — you point with masks/dots and regenerate; no manual pixel rescue.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    H["🧑‍🎨 Human<br/>step-flow WebUI"] -->|HTTP / SSE| B
+    A["🤖 Agent<br/>Claude / Codex · MCP"] -->|/mcp · 15 self-documenting tools| B
+    subgraph control["control machine — Mac / Linux / Windows"]
+      B["sprite-forge backend<br/>FastAPI + FastMCP → shared services.py<br/><b>quality gates live here</b>"]
+    end
+    subgraph gpu["GPU box — RTX-class, ~30 GB VRAM"]
+      C["ComfyUI<br/>SDXL · Qwen-Image-Edit · ControlNet · LoRA"]
+    end
+    B -->|HTTP + WebSocket, LAN| C
+    B -.->|adopt — gated, opt-in| G["your game's sprites/"]
+```
+
+The backend can run on the same machine as ComfyUI or a different one (it just needs `SPRITEFORGE_COMFY_URL`). It does **no local inference** — that is by design.
+
+## The pipeline
+
+```
+text idea → ① base sprite → ② character bible → ③ character LoRA → ④ any pose → adopt
+```
+
+1. **Base sprite** — SDXL (Illustrious) txt2img + matte → transparent RGBA. Optional AI prompt-crafting expands a rough idea into a tag prompt by shelling *your own* `claude` / `codex` CLI (no extra API cost). Pale/white characters auto-switch to a high-contrast background so the matte stays clean.
+2. **Character bible** — one Qwen-Image-Edit "master sheet" anchors a consistent turnaround + expressions + actions + alt costumes; exported as an aligned sheet **and** a self-contained HTML bible.
+3. **Character LoRA** — train a LoRA from the bible's panels in one click; the backend drives kohya sd-scripts on the GPU box over SSH.
+4. **Any pose** — `generate_sprite` with the character LoRA produces that character in new poses/outfits; `adopt` writes accepted sprites into your game (irreversible, opt-in, gated).
+
+Plus a **damage/variant editor** (Qwen-Image-Edit with pose-lock + optional garment mask for pixel-exact bbox) and **SAM2** point-masking.
+
+## Requirements
+
+This is a **remote-GPU orchestrator — it does not generate anything by itself.** You need:
+
+- A **CUDA GPU running ComfyUI**, reachable over HTTP+WS. Target **~30 GB VRAM** (RTX 5090 class) — the edit path co-loads a ~20 GB DiT. **Not runnable on a small GPU** as-is.
+- The **model set** + required custom nodes (Qwen-Image-Edit, Union ControlNet) — see **[docs/models.md](docs/models.md)**.
+- **Python 3.11+** for the backend.
+
+## Quickstart
+
+> Full setup (GPU box, models, optional features, honest limits) is in **[INSTALL.md](INSTALL.md)**.
 
 ```bash
+git clone https://github.com/kitepon-rgb/sprite-forge-mcp.git
 cd sprite-forge-mcp
-python3.12 -m venv .venv && . .venv/bin/activate   # 初回のみ（Python 3.11+ 必須）
-pip install -r requirements.txt                     # 初回のみ
-cp .env.example .env                                # SPRITEFORGE_COMFY_URL 等を設定
+python3.12 -m venv .venv && . .venv/bin/activate     # 3.11+
+pip install -r requirements.txt
+cp .env.example .env                                  # set SPRITEFORGE_COMFY_URL → your ComfyUI
 uvicorn backend.app:app --host 127.0.0.1 --port 8765
 ```
-- WebUI: `http://127.0.0.1:8765/`
-- MCP: `http://127.0.0.1:8765/mcp/`（`.mcp.json` 登録済み・uvicorn 起動中のみ）
-- 到達確認: `curl localhost:8765/api/gpu` / `curl http://<GPU_HOST>:8188/system_stats`
 
-## 構成
-```
-backend/    Python: FastAPI + FastMCP + 共有サービス層 + ComfyUI client + LoRA学習 + バイブル生成 + AIプロンプト生成
-web/        vanilla ESM の ステップ導線 WebUI（ビルド工程なし）: shell/router + api/state/ui/jobs + features
-design/     claude.ai/design 用ショーケース（デザインシステム・キャラバイブル）
-docs/       設計ドキュメント（00〜07・設計の正典／実装は CLAUDE.md が最新）
-```
+- **WebUI** → <http://127.0.0.1:8765/>  ·  **health** → `curl localhost:8765/api/gpu`
+- **MCP** → register `http://127.0.0.1:8765/mcp/` as a URL-type server in Claude/Codex; it returns a full usage manual on connect.
 
-## ドキュメント
-導入は [INSTALL.md](INSTALL.md)＋[docs/models.md](docs/models.md)。実装の最新は [CLAUDE.md](CLAUDE.md)。以下 docs/ は設計の正典（一部は実装で進化＝各冒頭の状態注記参照）。
-- [INSTALL](INSTALL.md) — セットアップ手順（前提・任意機能・制約）
-- [Models manifest](docs/models.md) — 必須モデルの入手先・配置・必須ノード
-- [00 Context & Pain](docs/00-context-and-pain.md) — なぜ作るか（rpgdev の苦闘史と痛点）
-- [01 Research / SOTA](docs/01-research-sota.md) — 2026 現行調査の結論＋出典
-- [02 Architecture](docs/02-architecture.md) — 1バックエンド2フェイス
-- [03 Models & Runtime](docs/03-models-and-runtime.md) — モデル・VRAM・ランタイム判定
-- [04 Tool Surface](docs/04-tool-surface.md) — サービス＝MCP＝HTTP
-- [05 Output Contract](docs/05-output-contract.md) — rpgdev アセット契約
-- [06 WebUI UX](docs/06-webui-ux.md) — 人間向け UI フロー
-- [07 Validate on Box](docs/07-open-questions-validate-on-box.md) — 実機実証チェックリスト
+## MCP tools (the agent face)
 
-## 環境
-- GPU 機：`<GPU_HOST>`（Win11, RTX 5090 32GB, ComfyUI headless）。SSH = `<user>@<GPU_HOST>`。
-- バックエンド/WebUI/matting は **Mac 側**で稼働。ComfyUI だけ GPU 機、LAN の IP 直指定で接続。
+All 15 tools share the same gated services as the WebUI. The server is self-documenting (it returns a pipeline manual + glossary on initialize).
+
+| Group | Tools |
+|---|---|
+| Discovery / status | `gpu_status` · `list_sprites` · `list_loras` |
+| Prompt | `craft_prompt` (shells your `claude`/`codex` CLI) |
+| Generate / edit | `generate_sprite` · `generate_variant` · `make_transparent` · `pixelize` · `fit_to_base` |
+| Character | `generate_character_bible` · `bible_status` · `train_character_lora` |
+| Style LoRA | `train_style_lora` · `train_status` |
+| Adopt | `adopt` (gated write into your game) |
+
+## Design principles (the "scars")
+
+- **RGBA, four transparent corners, never a black background.** Transparency is a gate, not a hope.
+- **Damaged variants match the base canvas/bbox within ≤1 px** (denoise-locked; a garment mask guarantees 0 px).
+- **The retro style phrase is mandatory and auto-injected** — no silent drift.
+- **No hand-paint.** You point (mask / point / line); the model regenerates. Fixes are re-generation, never manual rescue.
+- **No silent fallback.** Failures surface with the stage and reason; nothing is quietly "fixed."
+- **Adopt is explicit and irreversible** — it writes into your game project only when you ask.
+
+## Documentation
+
+- **[INSTALL.md](INSTALL.md)** — setup, optional features, honest limitations
+- **[docs/models.md](docs/models.md)** — model sources, placement, required ComfyUI nodes
+- **[CLAUDE.md](CLAUDE.md)** — implementation reference (the source of truth)
+- **[docs/](docs/)** — design docs (context, research, architecture, output contract, …)
+
+## License
+
+[MIT](LICENSE). Model weights are **not** included — download them yourself (see [docs/models.md](docs/models.md)); each model carries its own license.

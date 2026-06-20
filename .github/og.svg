@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" font-family="-apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#13151a"/>
+      <stop offset="1" stop-color="#1b1e25"/>
+    </linearGradient>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4c8dff"/>
+      <stop offset="1" stop-color="#7ee08a"/>
+    </linearGradient>
+    <pattern id="checker" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#262b34"/>
+      <rect width="10" height="10" fill="#2e333d"/>
+      <rect x="10" y="10" width="10" height="10" fill="#2e333d"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="440" fill="url(#bg)"/>
+  <rect width="1280" height="6" fill="url(#acc)"/>
+
+  <!-- left: title block -->
+  <text x="80" y="150" fill="#e7e9ee" font-size="74" font-weight="800" letter-spacing="-1">sprite-forge<tspan fill="#4c8dff">-mcp</tspan></text>
+  <text x="82" y="208" fill="#9aa3b2" font-size="29" font-weight="600">Local-GPU sprite studio for games — one backend, two faces.</text>
+
+  <!-- two faces row -->
+  <g font-size="22" font-weight="700">
+    <rect x="82" y="246" width="232" height="48" rx="10" fill="#262b34" stroke="#343a45"/>
+    <text x="104" y="277" fill="#e7e9ee">🧑‍🎨 human · WebUI</text>
+    <text x="330" y="277" fill="#5b6472" font-size="26">+</text>
+    <rect x="360" y="246" width="226" height="48" rx="10" fill="#262b34" stroke="#343a45"/>
+    <text x="382" y="277" fill="#e7e9ee">🤖 agent · MCP</text>
+  </g>
+
+  <!-- pipeline line -->
+  <text x="82" y="346" fill="#7e8794" font-size="21" font-weight="600">prompt → sprite → character bible → LoRA → any pose → adopt</text>
+
+  <!-- tags -->
+  <g font-size="18" font-weight="600" fill="#9aa3b2">
+    <rect x="82" y="372" width="118" height="34" rx="17" fill="none" stroke="#343a45"/>
+    <text x="98" y="394">RTX · ComfyUI</text>
+    <rect x="210" y="372" width="92" height="34" rx="17" fill="none" stroke="#343a45"/>
+    <text x="226" y="394">FastMCP</text>
+    <rect x="312" y="372" width="86" height="34" rx="17" fill="none" stroke="#343a45"/>
+    <text x="328" y="394">RGBA</text>
+    <rect x="408" y="372" width="74" height="34" rx="17" fill="none" stroke="#343a45"/>
+    <text x="424" y="394">MIT</text>
+  </g>
+
+  <!-- right: a chunky pixel-art sprite on a checker tile (the product) -->
+  <g transform="translate(905,70)">
+    <rect x="-20" y="-20" width="320" height="320" rx="18" fill="url(#checker)" stroke="#343a45"/>
+    <!-- 12x12-ish chunky character silhouette, retro JRPG ally -->
+    <g shape-rendering="crispEdges">
+      <!-- hair -->
+      <rect x="100" y="20"  width="80" height="20" fill="#3a4cc0"/>
+      <rect x="80"  y="40"  width="120" height="20" fill="#4c8dff"/>
+      <!-- face -->
+      <rect x="100" y="60"  width="80" height="40" fill="#ffe0c2"/>
+      <rect x="112" y="76"  width="12" height="12" fill="#13151a"/>
+      <rect x="156" y="76"  width="12" height="12" fill="#13151a"/>
+      <!-- body / dress -->
+      <rect x="92"  y="100" width="96" height="20" fill="#7ee08a"/>
+      <rect x="80"  y="120" width="120" height="80" fill="#5bd17a"/>
+      <rect x="100" y="120" width="80" height="80" fill="#7ee08a"/>
+      <!-- arms -->
+      <rect x="60"  y="120" width="20" height="60" fill="#ffe0c2"/>
+      <rect x="200" y="120" width="20" height="60" fill="#ffe0c2"/>
+      <!-- legs / boots -->
+      <rect x="100" y="200" width="24" height="56" fill="#2e333d"/>
+      <rect x="156" y="200" width="24" height="56" fill="#2e333d"/>
+      <!-- outline accents -->
+      <rect x="80"  y="100" width="120" height="6" fill="#2a3550"/>
+    </g>
+  </g>
+</svg>
