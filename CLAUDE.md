@@ -50,7 +50,8 @@ uvicorn backend.app:app --host 127.0.0.1 --port 8765
 - ✅ **WebUI全面刷新**（ステップ導線①〜④＋編集/バリアント・設定/LoRA、vanilla ESMモジュール、デザインシステム）。E2E検証済み。
 - ✅ **MCP自己文書化**：`FastMCP(instructions=…)`＋discovery `list_sprites`/`list_loras`＝全15ツール、文脈ゼロの外部AIでも使える。
 - ⚠️ **box学習の前提＝TdrDelay=60**（長時間GPU学習のWDDM TDRフリーズ対策・再起動済み）。
-- 既知の残課題: 淡色（水）キャラの**生成物透過抽出**の詰め / pixel LoRA（posterizeで概ね代替済み）/ v2画風LoRAの過学習軽減（教材増）。
+- ✅ **淡色キャラの透過**: 白/淡色（水）キャラは薄グレー背景と低コントラストで matte が削れる→ `generate_sprite(bg=)` ＝ **auto背景判定**（淡色プロンプト→緑背景でmatte・通常→グレーで従来不変）＋ WebUI背景ピッカー（自動/グレー/緑/マゼンタ）で対応。
+- 既知の残課題: pixel LoRA（posterizeで概ね代替済み）/ v2画風LoRAの過学習軽減（教材増）。
 
 ## 規約メモ
 - git は `git init` 済み・コミットは依頼があってから（rpgdev 規約準拠）。

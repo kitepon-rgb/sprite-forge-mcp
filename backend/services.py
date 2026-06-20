@@ -5,6 +5,7 @@ so neither face can bypass them.
 from __future__ import annotations
 import io
 import json
+import re
 import subprocess
 import time
 import uuid
@@ -194,6 +195,22 @@ async def generate_variant(base: str, prompt: str, *, negative: str = "",
             "masked": mask_id is not None, "candidates": cands}
 
 
+# Pale / low-contrast-against-grey subjects: their silhouette is near light-grey so the matte
+# clips them — these get a GREEN background automatically (bg="auto"). Conservative: only strong
+# pale signals (skin/hair/element/translucency) trigger it; outfit colour alone does not.
+_PALE_RE = re.compile(
+    r"\b(pale|fair[- ]skin|white[- ]skin|white[- ]hair|silver[- ]hair|platinum|"
+    r"light[- ]blue|pale[- ]blue|sky[- ]blue|translucent|transparent|see[- ]through|"
+    r"water[- ](?:spirit|elemental|girl|mage|nymph)|aqua|ice|frost|snow|mermaid|"
+    r"ghost|spectral|albino|ivory|porcelain)\b", re.I)
+
+
+def _auto_bg(prompt: str) -> str:
+    """Pick the generation background: GREEN for pale/low-contrast subjects (gives the matte
+    contrast), else GREY. Used when bg='auto' (the default). Conservative by design."""
+    return "green" if _PALE_RE.search(prompt or "") else "grey"
+
+
 async def generate_sprite(prompt: str, *, negative: str = "lowres, blurry, jpeg artifacts, "
                           "thin delicate line art, hairline outline, watermark, text",
                           width: int = 1024, height: int = 1024,
@@ -201,7 +218,8 @@ async def generate_sprite(prompt: str, *, negative: str = "lowres, blurry, jpeg 
                           steps: int = 28, cfg: float = 6.0,
                           style_lora: bool = False, lora_strength: float | None = None,
                           lora_name: str | None = None, lora_trigger: str | None = None,
-                          control_base: str | None = None, control_strength: float = 0.55) -> dict:
+                          control_base: str | None = None, control_strength: float = 0.55,
+                          bg: str = "grey") -> dict:
     """SDXL (Illustrious) txt2img -> RGBA sprite batch. The mandatory style phrase is
     force-injected (scar tissue: never omit). Transparency = rembg matting; LayerDiffuse
     is NOT used (incoherent on Illustrious-XL).
@@ -215,8 +233,20 @@ async def generate_sprite(prompt: str, *, negative: str = "lowres, blurry, jpeg 
     # matting; dot granularity comes later via pixelize() (docs/03). A CLEAN, contrasting
     # background is essential: thin elements (hair tips, fingers) over a busy/same-colored
     # background get clipped by any matte — keep the bg flat/plain (verified 2026-06-17).
+    # bg: generation background colour. "auto" (default) = GREY for normal subjects, GREEN for
+    # PALE characters (white/pale-blue water spirits) whose own colour is near light-grey and
+    # confuses the matte. "grey"/"green"/"magenta"/"blue" force a specific colour. Non-pale
+    # prompts resolve to grey = original behaviour (no regression); only pale prompts change.
+    _BG = {
+        "grey": "plain flat solid light-grey",
+        "green": "plain flat solid chroma-key green (saturated #00b140)",
+        "magenta": "plain flat solid saturated magenta (#ff00cc)",
+        "blue": "plain flat solid saturated cobalt-blue",
+    }
+    bg_resolved = _auto_bg(prompt) if bg == "auto" else (bg if bg in _BG else "grey")
+    bg_phrase = _BG[bg_resolved]
     full = (f"{prompt}, {config.GEN_STYLE_PHRASE}, single character, full body, centered, "
-            f"isolated on a plain flat solid light-grey background, no scenery, no foliage")
+            f"isolated on a {bg_phrase} background, no scenery, no foliage")
     negative = (negative + ", busy background, foliage, vines, plants, leaves, scenery, "
                 "cluttered background, gradient background").strip(", ")
     use_lora = None; trig = None
@@ -243,9 +273,9 @@ async def generate_sprite(prompt: str, *, negative: str = "lowres, blurry, jpeg 
                                      lora_name=use_lora, lora_strength=lstr,
                                      control_image=control_image, control_strength=control_strength)
         meta = {"kind": "sprite", "prompt": full, "seed": s, "canvas": [width, height],
-                "lora": use_lora, "control_base": control_base}
+                "lora": use_lora, "control_base": control_base, "bg": bg_resolved}
         cands.append(await _run_save(wf, base=None, kind="sprite", meta=meta, matte=True))
-    return {"candidates": cands}
+    return {"candidates": cands, "bg": bg_resolved, "bg_requested": bg}
 
 
 def make_transparent(image_id: str) -> dict:

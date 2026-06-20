@@ -53,6 +53,7 @@ export function renderGenerate(stage, mode /* "base" | "activate" */) {
     el("div", { class: "inline" }, ...["standing", "walking", "running", "casting a spell", "battle stance", "sitting"].map((p) =>
       el("button", { class: "btn btn-sm btn-ghost", onclick: () => { prompt.value = (prompt.value ? prompt.value.replace(/,?\s*(standing|walking|running|casting a spell|battle stance|sitting)\b/gi, "") : "") + ", " + p; } }, p))))) : false;
 
+  const bgSel = el("select", {}, el("option", { value: "auto" }, "背景:自動(淡色→緑)"), el("option", { value: "grey" }, "背景:グレー"), el("option", { value: "green" }, "背景:緑"), el("option", { value: "magenta" }, "背景:マゼンタ"));
   const genBtn = el("button", { class: "btn btn-primary" }, isAct ? "このキャラを生成" : "素体を生成");
   const busy = el("span", { class: "busy", hidden: true });
   const errp = el("div", { class: "err-text", hidden: true });
@@ -61,7 +62,8 @@ export function renderGenerate(stage, mode /* "base" | "activate" */) {
     craft,
     el("div", { class: "field" }, el("label", {}, "プロンプト"), prompt),
     el("div", { class: "row" }, el("div", { class: "field" }, el("label", {}, "幅"), w), el("div", { class: "field" }, el("label", {}, "高"), h),
-      el("div", { class: "field" }, el("label", {}, "案数"), count), el("div", { class: "field" }, el("label", {}, "seed"), seed)),
+      el("div", { class: "field" }, el("label", {}, "案数"), count), el("div", { class: "field" }, el("label", {}, "seed"), seed),
+      el("div", { class: "field", title: "淡色(白/水色)キャラは緑背景の方が透過がきれい" }, el("label", {}, "背景"), bgSel)),
     el("div", { class: "row" }, el("label", { class: "toggle" }, styleToggle, "画風LoRA"),
       el("div", { class: "field" }, el("label", {}, "LoRA選択"), loraSel), el("div", { class: "field" }, el("label", {}, "トリガー"), trig),
       el("div", { class: "field" }, el("label", {}, "LoRA強さ"), strength)),
@@ -85,13 +87,14 @@ export function renderGenerate(stage, mode /* "base" | "activate" */) {
       const picked = loraSel.value.trim();
       const body = {
         prompt: prompt.value.trim(), width: +w.value, height: +h.value, count: +count.value,
-        style_lora: !picked && styleToggle.checked, lora_strength: +strength.value,
+        style_lora: !picked && styleToggle.checked, lora_strength: +strength.value, bg: bgSel.value,
       };
       if (picked) { body.lora_name = picked; body.lora_trigger = trig.value.trim(); }
       else if (isAct && state.charLora) { body.lora_name = state.charLora.lora_name; body.lora_trigger = state.charLora.trigger; }
       if (seed.value.trim()) body.seed = +seed.value;
       if (ctrl.value.trim()) { body.control_base = ctrl.value.trim(); body.control_strength = +ctrlStr.value; }
       const r = await API.generate(body);
+      if (body.bg === "auto" && r.bg && r.bg !== "grey") toast("淡色と判定 → 背景「" + r.bg + "」で生成", "ok");
       addCandidates((r.candidates || []).map((c) => ({ ...c, kind: "sprite" })));
       refresh();
     } catch (e) { errp.hidden = false; errp.textContent = "生成失敗: " + e.message; }

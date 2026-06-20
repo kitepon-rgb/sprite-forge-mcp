@@ -114,15 +114,19 @@ def _build_mcp_app():
     async def generate_sprite(prompt: str, width: int = 1024, height: int = 1024,
                               count: int = 4, seed: int | None = None,
                               style_lora: bool = False, control_base: str | None = None,
-                              lora_name: str | None = None, lora_trigger: str | None = None) -> dict:
+                              lora_name: str | None = None, lora_trigger: str | None = None,
+                              bg: str = "auto") -> dict:
         """Generate RGBA sprites: SDXL (Illustrious) txt2img + rembg matte. Mandatory
         retro style auto-injected. style_lora=True applies the default style LoRA; OR pass
         lora_name (+lora_trigger) for a CHARACTER LoRA (e.g. 'char-water.safetensors'/'sfwater')
-        — that overrides style_lora. control_base=<sprite> = ControlNet Canny pose hint."""
+        — that overrides style_lora. control_base=<sprite> = ControlNet Canny pose hint.
+        bg = generation background: "auto" (default; GREY for normal subjects, GREEN for PALE
+        characters whose own colour is near grey and confuses the matte) | "grey"/"green"/
+        "magenta" to force one. The response includes the resolved "bg"."""
         return await services.generate_sprite(prompt, width=width, height=height,
                                                count=count, seed=seed, style_lora=style_lora,
                                                control_base=control_base,
-                                               lora_name=lora_name, lora_trigger=lora_trigger)
+                                               lora_name=lora_name, lora_trigger=lora_trigger, bg=bg)
 
     @mcp.tool
     def make_transparent(image_id: str) -> dict:
@@ -257,7 +261,8 @@ async def api_generate(body: dict = Body(...)):
         lora_name=(body.get("lora_name") or None),
         lora_trigger=(body.get("lora_trigger") or None),
         control_base=(body.get("control_base") or None),
-        control_strength=float(body.get("control_strength", 0.55)))
+        control_strength=float(body.get("control_strength", 0.55)),
+        bg=str(body.get("bg", "auto")))
 
 
 @app.post("/api/transparent")
