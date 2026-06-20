@@ -14,7 +14,11 @@
 > **発想を打つ → 透過済みのゲーム用キャラスプライトが出る。同じエンジンを、あなた(WebUI)でも、あなたのAIエージェント(MCP)でも動かせる。**
 
 <p align="center">
-  <img src=".github/example-output.png" alt="四隅透過・クリーンな matte の RGBA スプライト出力例" width="100%">
+  <img src=".github/character-bible.png" alt="sprite-forge が生成したキャラバイブル（モデルシート）— ターンアラウンド・表情・アクション・別衣装を一貫したキャラで" width="76%">
+</p>
+<p align="center"><sub><b>キャラバイブル1枚</b>＝素体1枚から、一貫したターンアラウンド＋表情＋アクション＋別衣装。そして各スプライトはクリーンな透過RGBAで出力：</sub></p>
+<p align="center">
+  <img src=".github/example-output.png" alt="チェッカー背景の透過RGBAスプライト出力（四隅透過・クリーンmatte）" width="92%">
 </p>
 
 `sprite-forge` はローカルの [ComfyUI](https://github.com/comfyanonymous/ComfyUI) スタジオ。テキストの発想を、透過 **RGBA スプライト** → **キャラバイブル**（設定資料）→ **キャラLoRA** → **任意ポーズ** まで作る。制作で痛い目を見たルールを**品質ゲートとして焼き込んである**ので、壊れたアセットは出荷前に弾かれる。
