@@ -31,6 +31,7 @@ Mac (Claude/Codex 開発・ブラウザ)            box Windows (RTX5090 32GB)
 - 単一 `uvicorn` プロセスで FastAPI と FastMCP（`/mcp`）を同居マウント。
 - ComfyUI クライアントは startup（FastAPI lifespan）で1接続を張り共有。WS タイムアウト/ハングは指数バックオフ再接続。
 - `asyncio.Queue` でジョブを直列化（GPU は1ワークフローずつ＝実測知見の「同時常駐させない」規律）。
+- **長尺ジョブ系の MCP ツール（`generate_character_bible` / `train_style_lora` / `train_character_lora`）は必ず `async def` で定義する**（不変条件）。これらは内部で `asyncio.create_task(...)` によりバックグラウンドジョブを起動して `job_id` を即返しするため、ツールを同期 `def` にすると FastMCP がワーカースレッド（実行中ループ無し）で走らせ、`RuntimeError: no running event loop` で即死する。`generate_sprite`/`generate_variant` と同じく `async` 必須。
 - バッチ生成は seed を振って 4–6 案。進捗は候補ごとに **SSE** で並列ストリーム。
 - 生成物は box のローカル（例 `./.cache/generated/`）にキャッシュし、`GET /api/image/{id}` で配信＝ブラウザに即表示（パス探し不要）。
 

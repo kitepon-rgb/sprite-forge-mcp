@@ -150,8 +150,8 @@ def _build_mcp_app():
         return services.adopt(candidate_id, target_name, pair_with=pair_with, force=force)
 
     @mcp.tool
-    def train_style_lora(name: str = "sprite-style", trigger: str = "sfrpg",
-                         steps: int = 1500, repeats: int = 10) -> dict:
+    async def train_style_lora(name: str = "sprite-style", trigger: str = "sfrpg",
+                               steps: int = 1500, repeats: int = 10) -> dict:
         """Train a style LoRA on the GPU box from the rpgdev house-style sprites (backend
         builds the dataset, runs kohya sd-scripts over SSH, installs the LoRA into ComfyUI
         — no manual box steps). Long-running: returns a job_id; poll train_status."""
@@ -163,8 +163,8 @@ def _build_mcp_app():
         return training.status(job_id)
 
     @mcp.tool
-    def generate_character_bible(source: str, char_desc: str | None = None,
-                                 name: str | None = None, attr: str = "") -> dict:
+    async def generate_character_bible(source: str, char_desc: str | None = None,
+                                       name: str | None = None, attr: str = "") -> dict:
         """Generate a full CHARACTER BIBLE / model sheet from a source sprite (turnaround
         + body ref + expressions + action + costumes + chibi + wardrobe + palette), every
         panel identity-consistent via Qwen-edit, composed into a clean labeled sheet.
@@ -178,8 +178,8 @@ def _build_mcp_app():
         return bible.status(job_id)
 
     @mcp.tool
-    def train_character_lora(bible_name: str, trigger: str | None = None,
-                             name: str | None = None, steps: int = 1500) -> dict:
+    async def train_character_lora(bible_name: str, trigger: str | None = None,
+                                   name: str | None = None, steps: int = 1500) -> dict:
         """Train a CHARACTER LoRA from a generated bible's panels (run generate_character_bible
         first). Backend builds the dataset, stops ComfyUI for a clean GPU, trains kohya over
         SSH, restarts ComfyUI + installs the LoRA. Long-running: returns a job_id; poll
