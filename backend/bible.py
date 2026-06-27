@@ -38,12 +38,12 @@ PANELS = [
     ("turn_back", "TURNAROUND", "BACK", "back", "turned with her back fully toward the viewer, rear view, only the back of her body and head visible, face hidden"),
     ("body_front", "BODY REFERENCE", "FRONT (leotard)", "body", "wearing only a plain sport leotard bodysuit, front view, neutral A-pose, exact body proportions"),
     ("body_back", "BODY REFERENCE", "BACK (leotard)", "body", "wearing only a plain sport leotard bodysuit, rear view from behind, face hidden, exact body proportions"),
-    ("ex_neutral", "EXPRESSIONS", "NEUTRAL", "face", "neutral calm expression"),
-    ("ex_smile", "EXPRESSIONS", "SMILE", "face", "bright happy smile"),
-    ("ex_angry", "EXPRESSIONS", "ANGRY", "face", "angry fierce expression"),
-    ("ex_sad", "EXPRESSIONS", "SAD", "face", "sad expression"),
-    ("ex_surp", "EXPRESSIONS", "SURPRISE", "face", "surprised wide-eyed expression"),
-    ("ex_shy", "EXPRESSIONS", "SHY", "face", "shy blushing expression"),
+    ("ex_neutral", "EXPRESSIONS", "NEUTRAL", "face", "a calm neutral anime expression, soft gentle eyes, relaxed closed mouth"),
+    ("ex_smile", "EXPRESSIONS", "SMILE", "face", "a bright cheerful anime smile, happy sparkling eyes, soft blush, warm open smile"),
+    ("ex_angry", "EXPRESSIONS", "ANGRY", "face", "a comedic anime angry expression, puffed-up cheeks, pouting, an anime anger-vein mark on the forehead, furrowed brows"),
+    ("ex_sad", "EXPRESSIONS", "SAD", "face", "a teary anime sad expression, big watery welling eyes, glistening tears, downturned trembling mouth"),
+    ("ex_surp", "EXPRESSIONS", "SURPRISE", "face", "a surprised anime expression, huge round sparkling wide eyes, small open mouth, shocked"),
+    ("ex_shy", "EXPRESSIONS", "SHY", "face", "a shy embarrassed anime expression, heavy blush across the cheeks, eyes glancing away, bashful nervous look"),
     ("act_cast", "ACTION POSES", "CAST", "full", "dynamic action pose casting a powerful spell, dramatic angle"),
     ("act_run", "ACTION POSES", "RUN", "full", "running fast, dynamic"),
     ("act_jump", "ACTION POSES", "JUMP", "full", "jumping in the air, dynamic pose"),
@@ -85,7 +85,9 @@ def _instr(kind: str, suffix: str) -> str:
     single isolated high-res panel of that same character."""
     head = "Using the exact character shown in this character reference sheet,"
     if kind == "face":
-        return f"{head} draw a close-up headshot of ONLY that character's face with a {suffix}, single face, head and shoulders, plain white background, high detail"
+        return (f"{head} draw a close-up headshot of ONLY that character's face with {suffix}, "
+                f"in an expressive Japanese anime style with big expressive anime eyes and clean anime cel shading, "
+                f"single face, head and shoulders, plain white background, high detail")
     if kind == "item":
         return f"{head} draw ONLY {suffix} of that character as a single isolated object, no person, no body, centered on plain white background, high detail"
     if kind == "free":
