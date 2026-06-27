@@ -286,6 +286,12 @@ async def _run_char_job(job_id: str, bible_name: str, trigger: str, name: str, s
         job["images"] = cnt
 
         job["status"] = "uploading to box"
+        # scp -r cannot create the 2-level dest parent (sf-lora/char_<name>/); make it first.
+        rc, o, e = await _sh("ssh", "-o", "ConnectTimeout=20", box,
+                             f"powershell -NoProfile -Command \"New-Item -ItemType Directory -Force -Path {config.BOX_SFLORA}\\char_{name} | Out-Null\"",
+                             timeout=60)
+        if rc != 0:
+            raise RuntimeError(f"mkdir remote dataset dir failed: {e[-300:]}")
         rc, o, e = await _sh("scp", "-r", "-o", "ConnectTimeout=20", str(local / "img"),
                              f"{box}:sf-lora/char_{name}/img", timeout=300)
         if rc != 0:
